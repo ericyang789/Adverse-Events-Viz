@@ -5,7 +5,8 @@ library(tidyverse)
 library(crosstalk)
 library(lubridate)
 
-#read and prepare the data
+# read and prepare the data
+
 data <- read.csv('CAERS_ASCII_2004_2017Q2.csv')
 
 # if no event start date, use report creation date
@@ -76,6 +77,7 @@ ui <- fluidPage(
     # Show plots
     mainPanel(
       plotlyOutput("plot"),
+      verbatimTextOutput("click")
     )
   )
 )
@@ -99,6 +101,19 @@ server <- function(input, output,session) {
             mode= 'lines',
             color=~PRI_FDA.Industry.Name) %>% layout(yaxis = list(type = "log",title="log(Count)"),legend = list(font = list(size = 10)))
   })
+  
+  output$click <- renderPrint({
+    # Problem 1.3, update the week slider here
+    if (is.null(event_data("plotly_relayout"))) {
+      "Zoom and Pan in the line chart also updates the slider"
+    } else {
+      print(event_data("plotly_relayout"))
+      invisible(updateSliderInput(inputId="year",
+                                  value=c(event_data("plotly_relayout")$`xaxis.range[0]`,
+                                          event_data("plotly_relayout")$`xaxis.range[1]`)))
+    }
+  });
+  
   
   
 }
