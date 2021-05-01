@@ -76,14 +76,14 @@ ui <- fluidPage(
     
     # Show plots
     mainPanel(
-      plotlyOutput("plot"),
+      plotlyOutput("plot2"),
       verbatimTextOutput("click")
     )
   )
 )
 
 server <- function(input, output,session) {
-  output$plot <- renderPlotly({
+  output$plot2 <- renderPlotly({
     filtered_data <-data %>% 
       {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender==c("Male","Female","Not Available")))} %>%
       filter(year>=input$year[1]) %>%
@@ -107,7 +107,7 @@ server <- function(input, output,session) {
     if (is.null(event_data("plotly_relayout"))) {
       "Zoom and Pan in the line chart also updates the slider"
     } else {
-      print(event_data("plotly_relayout"))
+      #print(event_data("plotly_relayout"))
       invisible(updateSliderInput(inputId="year",
                                   value=c(event_data("plotly_relayout")$`xaxis.range[0]`,
                                           event_data("plotly_relayout")$`xaxis.range[1]`)))
