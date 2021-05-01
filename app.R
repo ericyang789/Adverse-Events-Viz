@@ -4,6 +4,7 @@ library(tidyverse)
 library(crosstalk)
 library(lubridate)
 library(stringr)
+library(RColorBrewer)
 
 # read and prepare the data
 
@@ -35,9 +36,9 @@ data <- data %>%
     CI_Age.at.Adverse.Event >= 65 ~ 'Senior (65+ yrs)',
     is.na(CI_Age.at.Adverse.Event) ~ 'Age Unknown'))
 
-# remove few samples prior to 1980
+# remove few samples prior to 2000
 data <- data %>%
-  filter(year >= 1980)
+  filter(year >= 2000)
 
 # Define UI 
 ui <- fluidPage(
@@ -84,7 +85,8 @@ ui <- fluidPage(
       plotlyOutput("plot1"),
       br(), br(),
       plotlyOutput("plot2"),
-      verbatimTextOutput("click"),
+      #verbatimTextOutput("click"),
+      br(), br(),
       plotlyOutput("plot3")
       
     )
@@ -136,7 +138,9 @@ server <- function(input, output,session) {
             y = ~n,
             type = 'scatter',
             mode= 'lines',
-            color=~PRI_FDA.Industry.Name, colors="Dark2") %>% layout(yaxis = list(type = "log",title="Count"),legend = list(font = list(size = 10)))
+            color=~PRI_FDA.Industry.Name, colors="Dark2") %>% layout(title = list(text='Adverse Event Causing Industries Over Time'),
+                                                                     yaxis = list(type = "log",title="Count"),
+                                                                     xaxis = list(title='Year'),legend = list(font = list(size = 10)))
   })
   
   output$click <- renderPrint({
@@ -164,7 +168,11 @@ server <- function(input, output,session) {
     
     plot3_data$age_group <- factor(plot3_data$age_group, levels = c("Child (0-14 yrs)", "Youth (15-24 yrs)", "Adult (25-64 yrs)", "Senior (65+ yrs)"))
     mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(14)
-    fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + geom_bar(stat='identity') +  scale_fill_manual(values=mycolors)+scale_x_log10() + facet_wrap(~age_group, scales = "free_x")+ theme(legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +xlab("Count") 
+    fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + 
+      geom_bar(stat='identity')  +  scale_fill_manual(values=mycolors)+scale_x_log10() + 
+      facet_wrap(~age_group, scales = "free_x")+ theme(plot.title = element_text(hjust = 0.2),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +
+      xlab("Count") + 
+      ggtitle("Adverse Event Causing Industries by Age Group")
     
     ggplotly(fig)
   });
