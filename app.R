@@ -1,3 +1,4 @@
+
 library(plotly)
 library(shiny)
 library(tidyverse)
@@ -61,25 +62,45 @@ ui <- fluidPage(
                   ticks = TRUE,
                   sep = ""),
       checkboxGroupInput(inputId ='age_grp',
-                    label = h3('Age group(s):'),
-                    choices = c('Child (0-14 yrs)','Youth (15-24 yrs)',
-                                'Adult (25-64 yrs)','Senior (65+ yrs)',
-                                'Age Unknown'),
-                    selected = c('Child (0-14 yrs)','Youth (15-24 yrs)',
-                                 'Adult (25-64 yrs)','Senior (65+ yrs)',
-                                 'Age Unknown') 
-                    )
+                         label = h3('Age group(s):'),
+                         choices = c('Child (0-14 yrs)','Youth (15-24 yrs)',
+                                     'Adult (25-64 yrs)','Senior (65+ yrs)',
+                                     'Age Unknown'),
+                         selected = c('Child (0-14 yrs)','Youth (15-24 yrs)',
+                                      'Adult (25-64 yrs)','Senior (65+ yrs)',
+                                      'Age Unknown') 
+      )
     ),
     
     # Show plots
     mainPanel(
-      
+      plotlyOutput("plot"),
     )
   )
 )
 
 server <- function(input, output,session) {
+  output$plot <- renderPlotly({
+    filtered_data <-data %>% 
+      {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender==c("Male","Female","Not Available")))} %>%
+      filter(year>=input$year[1]) %>%
+      filter(year<=input$year[2]) %>%
+      filter(age_group==input$age_grp)
+    
+    industry_year_grouped=filtered_data %>%
+      group_by(PRI_FDA.Industry.Name,year) %>%
+      summarise(n = n())
+    
+    plot_ly(industry_year_grouped,
+            x = ~year, 
+            y = ~n,
+            type = 'scatter',
+            mode= 'lines',
+            color=~PRI_FDA.Industry.Name) %>% layout(yaxis = list(type = "log",title="log(Count)"))
+  })
+  
   
 }
+
 
 shinyApp(ui, server, options = list(height=600))
