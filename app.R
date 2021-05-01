@@ -2,6 +2,7 @@ library(plotly)
 library(shiny)
 library(tidyverse)
 library(crosstalk)
+library(lubridate)
 
 data <- read.csv('CAERS_ASCII_2004_2017Q2.csv')
 
@@ -20,6 +21,15 @@ top13_names <- top13$`data$PRI_FDA.Industry.Name`
 data$PRI_FDA.Industry.Name <- ifelse(data$PRI_FDA.Industry.Name %in% top13_names, 
                                      data$PRI_FDA.Industry.Name, 
                                      'Other')
+data$year <- year(mdy(data$AEC_Event.Start.Date))
+data <- data %>%
+  mutate(age_group = case_when(
+    CI_Age.at.Adverse.Event <= 14 ~ 'Child (0-14 yrs)',
+    CI_Age.at.Adverse.Event >= 15 & CI_Age.at.Adverse.Event <= 24 ~ 'Youth (15-24 yrs)',
+    CI_Age.at.Adverse.Event >= 25 & CI_Age.at.Adverse.Event <= 64 ~ 'Adult (25-64 yrs)',
+    CI_Age.at.Adverse.Event >= 65 ~ 'Senior (65+ yrs)',
+    is.na(CI_Age.at.Adverse.Event) ~ 'Age Unknown'))
+
 
 # Define UI 
 ui <- fluidPage(
@@ -30,7 +40,35 @@ ui <- fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-      
+      sliderInput(inputId = 'top_prod',
+                  label = h3('Number of products to display:'),
+                  min = 1, 
+                  max = 25, 
+                  value = 10, 
+                  step = 1,
+                  ticks = TRUE,
+                  sep = ""),
+      radioButtons(inputId = 'gender',
+                   label = h3('Gender:'),
+                   choices = c('Male', 'Female', 'All'),
+                   selected = 'All'),
+      sliderInput(inputId ='year',
+                  label = h3('Year(s):'),
+                  min = min(data$year),
+                  max = max(data$year),
+                  value = c(min(data$year), max(data$year)),
+                  step = 1,
+                  ticks = TRUE,
+                  sep = ""),
+      checkboxGroupInput(inputId ='age_grp',
+                    label = h3('Age group(s):'),
+                    choices = c('Child (0-14 yrs)','Youth (15-24 yrs)',
+                                'Adult (25-64 yrs)','Senior (65+ yrs)',
+                                'Age Unknown'),
+                    selected = c('Child (0-14 yrs)','Youth (15-24 yrs)',
+                                 'Adult (25-64 yrs)','Senior (65+ yrs)',
+                                 'Age Unknown') 
+                    )
     ),
     
     # Show plots
@@ -39,3 +77,9 @@ ui <- fluidPage(
     )
   )
 )
+
+server <- function(input, output,session) {
+  
+}
+
+shinyApp(ui, server, options = list(height=600))
