@@ -133,7 +133,7 @@ server <- function(input, output,session) {
     
     plot3_data$age_group <- factor(plot3_data$age_group, levels = c("Child (0-14 yrs)", "Youth (15-24 yrs)", "Adult (25-64 yrs)", "Senior (65+ yrs)"))
     mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(14)
-    fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + geom_bar(stat='identity') +  scale_fill_manual(values=mycolors)+scale_x_log10() + facet_wrap(~age_group, scales = "free_x")+ theme(legend.position = "none",axis.title.y=element_blank()) +xlab("Count")
+    fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + geom_bar(stat='identity') +  scale_fill_manual(values=mycolors)+scale_x_log10() + facet_wrap(~age_group, scales = "free_x")+ theme(legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +xlab("Count") 
     
     ggplotly(fig)
   });
