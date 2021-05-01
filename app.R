@@ -5,6 +5,7 @@ library(tidyverse)
 library(crosstalk)
 library(lubridate)
 
+#read and prepare the data
 data <- read.csv('CAERS_ASCII_2004_2017Q2.csv')
 
 # if no event start date, use report creation date
@@ -57,7 +58,7 @@ ui <- fluidPage(
                   label = h3('Year(s):'),
                   min = min(data$year),
                   max = max(data$year),
-                  value = c(min(data$year), max(data$year)),
+                  value = c(2000, 2017),
                   step = 1,
                   ticks = TRUE,
                   sep = ""),
@@ -96,7 +97,7 @@ server <- function(input, output,session) {
             y = ~n,
             type = 'scatter',
             mode= 'lines',
-            color=~PRI_FDA.Industry.Name) %>% layout(yaxis = list(type = "log",title="log(Count)"))
+            color=~PRI_FDA.Industry.Name) %>% layout(yaxis = list(type = "log",title="log(Count)"),legend = list(font = list(size = 10)))
   })
   
   
