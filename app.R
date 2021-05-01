@@ -63,7 +63,7 @@ ui <- fluidPage(
                   label = h3('Year(s):'),
                   min = min(data$year),
                   max = max(data$year),
-                  value = c(2000, 2017),
+                  value = c(min(data$year), max(data$year)),
                   step = 1,
                   ticks = TRUE,
                   sep = ""),
