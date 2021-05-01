@@ -4,6 +4,7 @@ library(shiny)
 library(tidyverse)
 library(crosstalk)
 library(lubridate)
+library(stringr)
 
 # read and prepare the data
 
@@ -35,9 +36,9 @@ data <- data %>%
     CI_Age.at.Adverse.Event >= 65 ~ 'Senior (65+ yrs)',
     is.na(CI_Age.at.Adverse.Event) ~ 'Age Unknown'))
 
-# remove few samples prior to 2000
+# remove few samples prior to 1980
 data <- data %>%
-  filter(year >= 2000)
+  filter(year >= 1980)
 
 # Define UI 
 ui <- fluidPage(
@@ -81,6 +82,8 @@ ui <- fluidPage(
     
     # Show plots
     mainPanel(
+      plotlyOutput("plot1"),
+      br(), br(),
       plotlyOutput("plot2"),
       verbatimTextOutput("click")
     )
@@ -88,12 +91,40 @@ ui <- fluidPage(
 )
 
 server <- function(input, output,session) {
-  output$plot2 <- renderPlotly({
+  # create bar plot
+  output$plot1 <- renderPlotly({
     filtered_data <-data %>% 
-      {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender==c("Male","Female","Not Available")))} %>%
+      {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender %in% c("Male","Female","Not Available")))} %>%
       filter(year>=input$year[1]) %>%
       filter(year<=input$year[2]) %>%
-      filter(age_group==input$age_grp)
+      filter(age_group%in%input$age_grp)
+    filtered_data$PRI_Reported.Brand.Product.Name <- str_to_title(filtered_data$PRI_Reported.Brand.Product.Name)
+    product_grouped <- filtered_data %>%
+      filter(filtered_data$PRI_Reported.Brand.Product.Name != 'Redacted') %>%
+      group_by(PRI_Reported.Brand.Product.Name) %>%
+      summarise(n = n()) %>%
+      arrange(desc(n)) %>%
+      head(input$top_prod)
+    
+    plot_ly(product_grouped,
+            x = ~PRI_Reported.Brand.Product.Name, 
+            y = ~n,
+            type = 'bar') %>% 
+      layout(title = list(text='Top Adverse Event Causing Products'),
+             yaxis = list(title="Count"),
+             xaxis=list(title="", categoryorder = "array", categoryarray = ~PRI_Reported.Brand.Product.Name,
+                        ticks = 'outside',
+                        tickfont = list(size = 10),
+                        tickangle = 15, size = 5,
+                        tickprefix=" "))  
+  })
+  
+  output$plot2 <- renderPlotly({
+    filtered_data <-data %>% 
+      {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender %in% c("Male","Female","Not Available")))} %>%
+      filter(year>=input$year[1]) %>%
+      filter(year<=input$year[2]) %>%
+      filter(age_group%in%input$age_grp)
     
     industry_year_grouped=filtered_data %>%
       group_by(PRI_FDA.Industry.Name,year) %>%
@@ -107,11 +138,11 @@ server <- function(input, output,session) {
             color=~PRI_FDA.Industry.Name) %>% 
       layout(yaxis = list(type = "log",title="Count"),
              legend = list(title=list(text='Industry'),font = list(size = 10)),
-             xaxis=list(tickformat='d',title="Year"))  
+             xaxis=list(tickformat='d',title="Year"))  %>% 
+      highlight()
   })
   
   output$click <- renderPrint({
-    # Problem 1.3, update the week slider here
     if (is.null(event_data("plotly_relayout"))) {
       "Zoom and Pan in the line chart also updates the slider"
     } else {
