@@ -24,6 +24,8 @@ top13_names <- top13$`data$PRI_FDA.Industry.Name`
 data$PRI_FDA.Industry.Name <- ifelse(data$PRI_FDA.Industry.Name %in% top13_names, 
                                      data$PRI_FDA.Industry.Name, 
                                      'Other')
+
+# create age groups
 data$year <- year(mdy(data$AEC_Event.Start.Date))
 data <- data %>%
   mutate(age_group = case_when(
@@ -33,6 +35,9 @@ data <- data %>%
     CI_Age.at.Adverse.Event >= 65 ~ 'Senior (65+ yrs)',
     is.na(CI_Age.at.Adverse.Event) ~ 'Age Unknown'))
 
+# remove few samples prior to 2000
+data <- data %>%
+  filter(year >= 2000)
 
 # Define UI 
 ui <- fluidPage(
@@ -59,7 +64,7 @@ ui <- fluidPage(
                   label = h3('Year(s):'),
                   min = min(data$year),
                   max = max(data$year),
-                  value = c(2000, 2017),
+                  value = c(min(data$year),max(data$year)),
                   step = 1,
                   ticks = TRUE,
                   sep = ""),
@@ -99,7 +104,10 @@ server <- function(input, output,session) {
             y = ~n,
             type = 'scatter',
             mode= 'lines',
-            color=~PRI_FDA.Industry.Name) %>% layout(yaxis = list(type = "log",title="log(Count)"),legend = list(font = list(size = 10)))
+            color=~PRI_FDA.Industry.Name) %>% 
+      layout(yaxis = list(type = "log",title="Count"),
+             legend = list(title=list(text='Industry'),font = list(size = 10)),
+             xaxis=list(tickformat='d',title="Year"))  
   })
   
   output$click <- renderPrint({
