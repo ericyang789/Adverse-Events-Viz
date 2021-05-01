@@ -1,4 +1,3 @@
-
 library(plotly)
 library(shiny)
 library(tidyverse)
@@ -65,7 +64,7 @@ ui <- fluidPage(
                   label = h3('Year(s):'),
                   min = min(data$year),
                   max = max(data$year),
-                  value = c(min(data$year),max(data$year)),
+                  value = c(min(data$year), max(data$year)),
                   step = 1,
                   ticks = TRUE,
                   sep = ""),
@@ -85,7 +84,9 @@ ui <- fluidPage(
       plotlyOutput("plot1"),
       br(), br(),
       plotlyOutput("plot2"),
-      verbatimTextOutput("click")
+      verbatimTextOutput("click"),
+      plotlyOutput("plot3")
+      
     )
   )
 )
@@ -135,25 +136,38 @@ server <- function(input, output,session) {
             y = ~n,
             type = 'scatter',
             mode= 'lines',
-            color=~PRI_FDA.Industry.Name) %>% 
-      layout(yaxis = list(type = "log",title="Count"),
-             legend = list(title=list(text='Industry'),font = list(size = 10)),
-             xaxis=list(tickformat='d',title="Year"))  %>% 
-      highlight()
+            color=~PRI_FDA.Industry.Name, colors="Dark2") %>% layout(yaxis = list(type = "log",title="Count"),legend = list(font = list(size = 10)))
   })
   
   output$click <- renderPrint({
     if (is.null(event_data("plotly_relayout"))) {
       "Zoom and Pan in the line chart also updates the slider"
     } else {
-      #print(event_data("plotly_relayout"))
       invisible(updateSliderInput(inputId="year",
                                   value=c(event_data("plotly_relayout")$`xaxis.range[0]`,
                                           event_data("plotly_relayout")$`xaxis.range[1]`)))
     }
   });
   
-  
+  output$plot3 <- renderPlotly({
+    filtered_data <-data %>% 
+      {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender %in% c("Male","Female","Not Available")))} %>%
+      filter(year>=input$year[1]) %>%
+      filter(year<=input$year[2]) %>%
+      filter(age_group %in% input$age_grp)
+    
+    plot3_data=filtered_data %>% filter(age_group!="Age Unknown") %>%
+      group_by(PRI_FDA.Industry.Name,age_group) %>%
+      summarise(n = n())
+    
+    plot3_data$age_group=as.factor(plot3_data$age_group)
+    
+    plot3_data$age_group <- factor(plot3_data$age_group, levels = c("Child (0-14 yrs)", "Youth (15-24 yrs)", "Adult (25-64 yrs)", "Senior (65+ yrs)"))
+    mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(14)
+    fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + geom_bar(stat='identity') +  scale_fill_manual(values=mycolors)+scale_x_log10() + facet_wrap(~age_group, scales = "free_x")+ theme(legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +xlab("Count") 
+    
+    ggplotly(fig)
+  });
   
 }
 
