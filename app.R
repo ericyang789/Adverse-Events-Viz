@@ -91,7 +91,7 @@ ui <- fluidPage(
                                "Mult Food Dinner/Grav/Sauce/Special","Nuts/Edible Seed",
                                "Other","Soft Drink/Water","Vegetables/Vegetable Products","Vit/Min/Prot/Unconv Diet(Human/Animal)"),
                   multiple = TRUE),
-      tags$div(tags$h5("*Remove or add product industries")),
+      tags$div(tags$h5("*Remove or add product industries"))
                   
     ),
     
@@ -100,7 +100,7 @@ ui <- fluidPage(
       plotlyOutput("plot1"),
       br(), br(),
       plotlyOutput("plot2"),
-      #verbatimTextOutput("click"),
+      verbatimTextOutput("click"),
       br(), br(),
       plotlyOutput("plot3")
       
@@ -149,26 +149,22 @@ server <- function(input, output,session) {
     industry_year_grouped=filtered_data %>%
       group_by(PRI_FDA.Industry.Name,year) %>%
       summarise(n = n())
+    mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(14)
     
-    plot_ly(industry_year_grouped,
-            x = ~year, 
-            y = ~n,
-            type = 'scatter',
-            mode= 'lines',
-            color=~PRI_FDA.Industry.Name, colors="Dark2") %>% layout(title = list(text='Adverse Event Causing Industries Over Time'),
-                                                                     yaxis = list(type = "log",title="Count"),
-                                                                     xaxis = list(title='Year'),legend = list(font = list(size = 10)))
-  })
-  
-  output$click <- renderPrint({
-    if (is.null(event_data("plotly_relayout"))) {
-      "Zoom and Pan in the line chart also updates the slider"
-    } else {
-      invisible(updateSliderInput(inputId="year",
-                                  value=c(event_data("plotly_relayout")$`xaxis.range[0]`,
-                                          event_data("plotly_relayout")$`xaxis.range[1]`)))
-    }
-  });
+    p<-ggplot(industry_year_grouped, aes(x=year, y=n,group=PRI_FDA.Industry.Name)) +
+      geom_line(aes(color=PRI_FDA.Industry.Name))+ scale_color_manual(values=mycolors) +scale_y_log10() +
+      ggtitle('Adverse Event Causing Industries Over Time') +xlab("Year") +ylab("count") +
+      theme(legend.title=element_blank(),legend.text=element_text(size=7))
+    
+    ggplotly(p) 
+})
+    output$click <- renderPrint({
+        invisible(updateSliderInput(inputId="year",
+                                    value=c(event_data("plotly_relayout")$`xaxis.range[0]`,
+                                            event_data("plotly_relayout")$`xaxis.range[1]`)))
+      
+    });
+
   
   output$plot3 <- renderPlotly({
     filtered_data <-data %>% 
