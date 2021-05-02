@@ -77,6 +77,20 @@ ui <- fluidPage(
                          selected = c('Child (0-14 yrs)','Youth (15-24 yrs)',
                                       'Adult (25-64 yrs)','Senior (65+ yrs)',
                                       'Age Unknown') 
+      ),
+      selectInput(inputId ='industry',
+                  label = h3('Product Industry: '),
+                  choices = c("Baby Food Prod" ,"Bakery Prod/Dough/Mix/Icing","Cereal Prep/Breakfast Food",
+                              "Cosmetics","Dietary Conv Food/Meal Replacements","Fishery/Seafood Prod",
+                              "Fruit/Fruit Prod","Milk/Butter/Dried Milk Prod" ,
+                              "Mult Food Dinner/Grav/Sauce/Special","Nuts/Edible Seed",
+                              "Other","Soft Drink/Water","Vegetables/Vegetable Products","Vit/Min/Prot/Unconv Diet(Human/Animal)"),
+                  selected = c("Baby Food Prod" ,"Bakery Prod/Dough/Mix/Icing","Cereal Prep/Breakfast Food",
+                               "Cosmetics","Dietary Conv Food/Meal Replacements","Fishery/Seafood Prod",
+                               "Fruit/Fruit Prod","Milk/Butter/Dried Milk Prod" ,
+                               "Mult Food Dinner/Grav/Sauce/Special","Nuts/Edible Seed",
+                               "Other","Soft Drink/Water","Vegetables/Vegetable Products","Vit/Min/Prot/Unconv Diet(Human/Animal)"),
+                  multiple = TRUE
       )
     ),
     
@@ -100,7 +114,8 @@ server <- function(input, output,session) {
       {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender %in% c("Male","Female","Not Available")))} %>%
       filter(year>=input$year[1]) %>%
       filter(year<=input$year[2]) %>%
-      filter(age_group%in%input$age_grp)
+      filter(age_group%in%input$age_grp) %>% 
+      filter(PRI_FDA.Industry.Name %in% input$industry)
     filtered_data$PRI_Reported.Brand.Product.Name <- str_to_title(filtered_data$PRI_Reported.Brand.Product.Name)
     product_grouped <- filtered_data %>%
       filter(filtered_data$PRI_Reported.Brand.Product.Name != 'Redacted') %>%
@@ -127,7 +142,8 @@ server <- function(input, output,session) {
       {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender %in% c("Male","Female","Not Available")))} %>%
       filter(year>=input$year[1]) %>%
       filter(year<=input$year[2]) %>%
-      filter(age_group%in%input$age_grp)
+      filter(age_group%in%input$age_grp) %>% 
+      filter(PRI_FDA.Industry.Name %in% input$industry)
     
     industry_year_grouped=filtered_data %>%
       group_by(PRI_FDA.Industry.Name,year) %>%
@@ -158,7 +174,8 @@ server <- function(input, output,session) {
       {if (input$gender!="All") filter(.,CI_Gender==input$gender) else (filter(.,CI_Gender %in% c("Male","Female","Not Available")))} %>%
       filter(year>=input$year[1]) %>%
       filter(year<=input$year[2]) %>%
-      filter(age_group %in% input$age_grp)
+      filter(age_group %in% input$age_grp) %>% 
+      filter(PRI_FDA.Industry.Name %in% input$industry)
     
     plot3_data=filtered_data %>% filter(age_group!="Age Unknown") %>%
       group_by(PRI_FDA.Industry.Name,age_group) %>%
@@ -171,7 +188,7 @@ server <- function(input, output,session) {
     fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + 
       geom_bar(stat='identity')  +  scale_fill_manual(values=mycolors)+scale_x_log10() + 
       facet_wrap(~age_group, scales = "free_x") + 
-      theme(plot.title = element_text(hjust = 0.2),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +
+      theme(plot.title = element_text(hjust = -4.0),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +
       xlab("Count") + 
       ggtitle("Adverse Event Causing Industries by Age Group")
     
