@@ -44,7 +44,7 @@ data <- data %>%
 ui <- fluidPage(
   
   # Application title
-  titlePanel("Visualization of Adverse Food Events"),
+  titlePanel("Visualization of FDA Reports on Adverse Events"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
