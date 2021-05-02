@@ -91,7 +91,7 @@ ui <- fluidPage(
                                "Mult Food Dinner/Grav/Sauce/Special","Nuts/Edible Seed",
                                "Other","Soft Drink/Water","Vegetables/Vegetable Products","Vit/Min/Prot/Unconv Diet(Human/Animal)"),
                   multiple = TRUE),
-      tags$div(tags$h5("*Remove or select product industries")),
+      tags$div(tags$h5("*Remove or add product industries")),
                   
     ),
     
