@@ -170,11 +170,13 @@ server <- function(input, output,session) {
     mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(14)
     fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + 
       geom_bar(stat='identity')  +  scale_fill_manual(values=mycolors)+scale_x_log10() + 
-      facet_wrap(~age_group, scales = "free_x")+ theme(plot.title = element_text(hjust = 0.2),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +
+      facet_wrap(~age_group, scales = "free_x") + 
+      theme(plot.title = element_text(hjust = 0.2),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +
       xlab("Count") + 
       ggtitle("Adverse Event Causing Industries by Age Group")
     
     ggplotly(fig)
+    
   });
   
 }
