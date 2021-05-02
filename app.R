@@ -130,12 +130,13 @@ server <- function(input, output,session) {
             y = ~n,
             type = 'bar') %>% 
       layout(title = list(text='Top Adverse Event Causing Products'),
-             yaxis = list(title="Count"),
+             yaxis = list(title="Count",fixedrange = TRUE),
              xaxis=list(title="", categoryorder = "array", categoryarray = ~PRI_Reported.Brand.Product.Name,
                         ticks = 'outside',
                         tickfont = list(size = 10),
                         tickangle = 15, size = 5,
-                        tickprefix=" "))  
+                        tickprefix=" ",
+                        fixedrange = TRUE))  
   })
   
   output$plot2 <- renderPlotly({
@@ -153,10 +154,10 @@ server <- function(input, output,session) {
     
     p<-ggplot(industry_year_grouped, aes(x=year, y=n,group=PRI_FDA.Industry.Name)) +
       geom_line(aes(color=PRI_FDA.Industry.Name))+ scale_color_manual(values=mycolors) +scale_y_log10() +
-      ggtitle('Adverse Event Causing Industries Over Time') +xlab("Year") +ylab("count") +
+      ggtitle('Adverse Event Causing Industries Over Time') +xlab("Year") +ylab("Count") +
       theme(legend.title=element_blank(),legend.text=element_text(size=7))
     
-    ggplotly(p) 
+    ggplotly(p) %>% layout(yaxis = list(fixedrange = TRUE))
 })
     output$click <- renderPrint({
         invisible(updateSliderInput(inputId="year",
@@ -189,7 +190,7 @@ server <- function(input, output,session) {
       xlab("Count") + 
       ggtitle("Adverse Event Causing Industries by Age Group")
     
-    ggplotly(fig)
+    ggplotly(fig) %>% layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
     
   });
   
