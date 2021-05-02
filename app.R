@@ -91,7 +91,7 @@ ui <- fluidPage(
                                "Mult Food Dinner/Grav/Sauce/Special","Nuts/Edible Seed",
                                "Other","Soft Drink/Water","Vegetables/Vegetable Products","Vit/Min/Prot/Unconv Diet(Human/Animal)"),
                   multiple = TRUE),
-      tags$div(tags$h5("*Remove or add product industries"))
+      tags$div(tags$h5("*Remove product industry with backspace, add product industry with dropdown selelction"))
                   
     ),
     
@@ -136,7 +136,7 @@ server <- function(input, output,session) {
                         tickfont = list(size = 10),
                         tickangle = 15, size = 5,
                         tickprefix=" ",
-                        fixedrange = TRUE))  
+                        fixedrange = TRUE))  %>% layout(autosize = T, width = 850, height = 400)
   })
   
   output$plot2 <- renderPlotly({
@@ -155,9 +155,9 @@ server <- function(input, output,session) {
     p<-ggplot(industry_year_grouped, aes(x=year, y=n,group=PRI_FDA.Industry.Name)) +
       geom_line(aes(color=PRI_FDA.Industry.Name))+ scale_color_manual(values=mycolors) +scale_y_log10() +
       ggtitle('Adverse Event Causing Industries Over Time') +xlab("Year") +ylab("Count") +
-      theme(legend.title=element_blank(),legend.text=element_text(size=7))
+      theme(legend.title=element_blank(),legend.text=element_text(size=9))
     
-    ggplotly(p) %>% layout(yaxis = list(fixedrange = TRUE))
+    ggplotly(p) %>% layout(yaxis = list(fixedrange = TRUE))%>% layout(autosize = T, width = 850, height = 400)
 })
     output$click <- renderPrint({
         invisible(updateSliderInput(inputId="year",
@@ -186,11 +186,11 @@ server <- function(input, output,session) {
     fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + 
       geom_bar(stat='identity')  +  scale_fill_manual(values=mycolors)+scale_x_log10() + 
       facet_wrap(~age_group, scales = "free_x") + 
-      theme(plot.title = element_text(hjust = 0.2),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(10, "mm")) +
+      theme(plot.title = element_text(hjust = -4),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(2, "mm")) +
       xlab("Count") + 
       ggtitle("Adverse Event Causing Industries by Age Group")
     
-    ggplotly(fig) %>% layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
+    ggplotly(fig) %>% layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>% layout(autosize = F, width = 700, height = 500)
     
   });
   
