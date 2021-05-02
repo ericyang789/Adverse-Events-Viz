@@ -79,7 +79,7 @@ ui <- fluidPage(
                                       'Age Unknown') 
       ),
       selectInput(inputId ='industry',
-                  label = h3('Product Industry: '),
+                  label = h3('Product Industry*: '),
                   choices = c("Baby Food Prod" ,"Bakery Prod/Dough/Mix/Icing","Cereal Prep/Breakfast Food",
                               "Cosmetics","Dietary Conv Food/Meal Replacements","Fishery/Seafood Prod",
                               "Fruit/Fruit Prod","Milk/Butter/Dried Milk Prod" ,
@@ -90,8 +90,9 @@ ui <- fluidPage(
                                "Fruit/Fruit Prod","Milk/Butter/Dried Milk Prod" ,
                                "Mult Food Dinner/Grav/Sauce/Special","Nuts/Edible Seed",
                                "Other","Soft Drink/Water","Vegetables/Vegetable Products","Vit/Min/Prot/Unconv Diet(Human/Animal)"),
-                  multiple = TRUE
-      )
+                  multiple = TRUE),
+      tags$div(tags$h5("*Remove or select product industries")),
+                  
     ),
     
     # Show plots
@@ -188,7 +189,7 @@ server <- function(input, output,session) {
     fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + 
       geom_bar(stat='identity')  +  scale_fill_manual(values=mycolors)+scale_x_log10() + 
       facet_wrap(~age_group, scales = "free_x") + 
-      theme(plot.title = element_text(hjust = -4.0),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(4, "mm")) +
+      theme(plot.title = element_text(hjust = 0.2),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(10, "mm")) +
       xlab("Count") + 
       ggtitle("Adverse Event Causing Industries by Age Group")
     
