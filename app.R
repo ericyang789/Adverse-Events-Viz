@@ -128,6 +128,8 @@ server <- function(input, output,session) {
     plot_ly(product_grouped,
             x = ~PRI_Reported.Brand.Product.Name, 
             y = ~n,
+            hoverinfo = 'text',
+            text = ~paste('</br>Product: ',PRI_Reported.Brand.Product.Name,'</br>Count: ',n),
             type = 'bar') %>% 
       layout(title = list(text='Top Adverse Event Causing Products'),
              yaxis = list(title="Count",fixedrange = TRUE),
@@ -152,12 +154,14 @@ server <- function(input, output,session) {
       summarise(n = n())
     mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(14)
     
-    p<-ggplot(industry_year_grouped, aes(x=year, y=n,group=PRI_FDA.Industry.Name)) +
+    p<-ggplot(industry_year_grouped, aes(x=year, y=n,group=PRI_FDA.Industry.Name,
+                                         text=paste('</br>Year: ',year,'</br>Industry: ',PRI_FDA.Industry.Name, '</br>Count: ',n))) +
       geom_line(aes(color=PRI_FDA.Industry.Name))+ scale_color_manual(values=mycolors) +scale_y_log10() +
       ggtitle('Adverse Event Causing Industries Over Time') +xlab("Year") +ylab("Count") +
       theme(legend.title=element_blank(),legend.text=element_text(size=9))
     
-    ggplotly(p) %>% layout(yaxis = list(fixedrange = TRUE))%>% layout(autosize = T, width = 850, height = 400)
+    ggplotly(p, tooltip='text')  %>% layout(yaxis = list(fixedrange = TRUE))%>% 
+      layout(autosize = T, width = 850, height = 400)
 })
     output$click <- renderPrint({
         invisible(updateSliderInput(inputId="year",
@@ -183,14 +187,15 @@ server <- function(input, output,session) {
     
     plot3_data$age_group <- factor(plot3_data$age_group, levels = c("Child (0-14 yrs)", "Youth (15-24 yrs)", "Adult (25-64 yrs)", "Senior (65+ yrs)"))
     mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(14)
-    fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name)) + 
+    fig=ggplot(plot3_data, aes(x=n, y=PRI_FDA.Industry.Name,fill=PRI_FDA.Industry.Name,
+                               text=paste('</br>Age group: ',age_group,'</br>Industry: ',PRI_FDA.Industry.Name, '</br>Count: ',n))) + 
       geom_bar(stat='identity')  +  scale_fill_manual(values=mycolors)+scale_x_log10() + 
       facet_wrap(~age_group, scales = "free_x") + 
       theme(plot.title = element_text(hjust = -4),legend.position = "none",axis.title.y=element_blank(),panel.spacing.y = unit(10, "mm")) +
       xlab("Count") + 
       ggtitle("Adverse Event Causing Industries by Age Group")
     
-    ggplotly(fig) %>% layout(xaxis = list(fixedrange = TRUE)) %>% layout(autosize = F, width = 700, height = 500)
+    ggplotly(fig, tooltip='text') %>% layout(xaxis = list(fixedrange = TRUE)) %>% layout(autosize = F, width = 700, height = 500)
     
   });
   
