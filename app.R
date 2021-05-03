@@ -190,7 +190,7 @@ server <- function(input, output,session) {
       xlab("Count") + 
       ggtitle("Adverse Event Causing Industries by Age Group")
     
-    ggplotly(fig) %>% layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE)) %>% layout(autosize = F, width = 700, height = 500)
+    ggplotly(fig) %>% layout(xaxis = list(fixedrange = TRUE)) %>% layout(autosize = F, width = 700, height = 500)
     
   });
   
