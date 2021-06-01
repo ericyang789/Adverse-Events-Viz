@@ -1,6 +1,6 @@
 # Adverse-Events-Viz - Visualization of FDA Adverse Food Events Reports
 
-See process book for design process. 
+See process book for design process. See App.R for code.
 
 RShiny application: https://ericyang789.shinyapps.io/adverse-events-viz/
 
